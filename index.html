@@ -7,62 +7,61 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#ffffff;--board:#f7f7f8;--red:#d72638;--red-dark:#a91e2e;--red-light:#ff4d5e;--black:#111111;--gray-900:#1a1a1a;--gray-700:#444444;--gray-500:#777777;--gray-300:#c4c4c4;--gray-200:#e0e0e0;--gray-100:#f0f0f0;--text:#111111;--dim:rgba(17,17,17,.4)}
-html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text)}
+:root{--bg:#1a1a1f;--board:#222228;--pink:#ff2d7b;--blue:#00d4ff;--green:#39ff7f;--yellow:#ffe156;--purple:#b44dff;--orange:#ff8a3d;--chalk:#e8e6e0;--dim:rgba(232,230,224,.35)}
+html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',sans-serif;color:var(--chalk)}
 #app{height:100vh;display:flex;flex-direction:column}
-header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--gray-200);z-index:100;flex-wrap:wrap;gap:8px}
-header h1{font-size:17px;font-weight:700;background:linear-gradient(135deg,var(--red),var(--black));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:rgba(30,30,36,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06);z-index:100;flex-wrap:wrap;gap:8px}
+header h1{font-size:17px;font-weight:600;background:linear-gradient(135deg,var(--pink),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-input[type=text],input[type=password]{background:var(--gray-100);border:1px solid var(--gray-200);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none;font-family:'Inter',sans-serif}
-input:focus{border-color:var(--red)}
+input[type=text],input[type=password]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 12px;color:var(--chalk);font-size:12px;outline:none;font-family:'Inter',sans-serif}
+input:focus{border-color:var(--blue)}
 input::placeholder{color:var(--dim)}
 .btn{padding:7px 16px;border-radius:8px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s}
-.btn-p{background:linear-gradient(135deg,var(--red),var(--red-dark));color:#fff}
-.btn-p:hover{box-shadow:0 0 20px rgba(215,38,56,.35)}
+.btn-p{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff}
+.btn-p:hover{box-shadow:0 0 20px rgba(255,45,123,.3)}
 .btn-p:disabled{opacity:.4;cursor:not-allowed}
-.btn-s{background:var(--gray-100);color:var(--text);border:1px solid var(--gray-200)}
-.btn-s:hover{background:var(--gray-200)}
-#board{flex:1;position:relative;overflow:hidden;background:var(--board);background-image:radial-gradient(circle at 20% 50%,rgba(215,38,56,.03) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(17,17,17,.02) 0%,transparent 50%)}
+.btn-s{background:rgba(255,255,255,.06);color:var(--chalk);border:1px solid rgba(255,255,255,.1)}
+#board{flex:1;position:relative;overflow:hidden;background:var(--board);background-image:radial-gradient(circle at 20% 50%,rgba(180,77,255,.03) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(0,212,255,.03) 0%,transparent 50%)}
 canvas{position:absolute;top:0;left:0;width:100%;height:100%}
-.dots{position:absolute;top:0;left:0;width:100%;height:100%;background-image:radial-gradient(circle,rgba(0,0,0,.04) 1px,transparent 1px);background-size:30px 30px;pointer-events:none}
-.nd{position:absolute;padding:9px 14px;border-radius:10px;font-size:11px;cursor:pointer;transition:transform .2s,box-shadow .2s;z-index:10;min-width:110px;text-align:center;opacity:0;transform:scale(.3);animation:ndIn .5s forwards;background:#fff}
+.dots{position:absolute;top:0;left:0;width:100%;height:100%;background-image:radial-gradient(circle,rgba(255,255,255,.04) 1px,transparent 1px);background-size:30px 30px;pointer-events:none}
+.nd{position:absolute;padding:9px 14px;border-radius:10px;font-size:11px;cursor:pointer;transition:transform .2s;z-index:10;min-width:110px;text-align:center;opacity:0;transform:scale(.3);animation:ndIn .5s forwards}
 .nd:hover{transform:scale(1.08)!important;z-index:20}
 .nd .ic{font-size:16px;margin-bottom:3px}
-.nd .lb{font-weight:600;font-size:11px;white-space:nowrap;color:var(--black)}
-.nd .st{font-size:9px;margin-top:2px;opacity:.7;font-family:'JetBrains Mono',monospace;color:var(--gray-500)}
-.nd.root{background:#fff;border:2px solid var(--red);box-shadow:0 2px 16px rgba(215,38,56,.15)}
-.nd.s1{background:#fff;border:1.5px solid var(--black);box-shadow:0 2px 12px rgba(0,0,0,.08)}
-.nd.s2{background:#fff;border:1.5px solid var(--red);box-shadow:0 2px 12px rgba(215,38,56,.1)}
-.nd.ct{background:#fff;border:1.5px solid var(--gray-700);box-shadow:0 2px 12px rgba(0,0,0,.06)}
-.nd.im{background:#fff;border:1.5px solid var(--red-dark);box-shadow:0 2px 12px rgba(169,30,46,.08)}
-.nd.out{background:#fff;border:1.5px solid var(--gray-300);box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.nd .lb{font-weight:600;font-size:11px;white-space:nowrap}
+.nd .st{font-size:9px;margin-top:2px;opacity:.7;font-family:'JetBrains Mono',monospace}
+.nd.root{background:linear-gradient(135deg,rgba(255,45,123,.15),rgba(180,77,255,.15));border:1.5px solid var(--pink);box-shadow:0 0 20px rgba(255,45,123,.2)}
+.nd.s1{background:linear-gradient(135deg,rgba(0,212,255,.12),rgba(57,255,127,.12));border:1.5px solid var(--blue);box-shadow:0 0 15px rgba(0,212,255,.15)}
+.nd.s2{background:linear-gradient(135deg,rgba(180,77,255,.12),rgba(255,45,123,.12));border:1.5px solid var(--purple);box-shadow:0 0 15px rgba(180,77,255,.15)}
+.nd.ct{background:linear-gradient(135deg,rgba(57,255,127,.12),rgba(0,212,255,.12));border:1.5px solid var(--green);box-shadow:0 0 15px rgba(57,255,127,.15)}
+.nd.im{background:linear-gradient(135deg,rgba(255,225,86,.12),rgba(255,138,61,.12));border:1.5px solid var(--yellow);box-shadow:0 0 15px rgba(255,225,86,.15)}
+.nd.out{background:linear-gradient(135deg,rgba(255,138,61,.12),rgba(255,45,123,.12));border:1.5px solid var(--orange);box-shadow:0 0 12px rgba(255,138,61,.12)}
 .nd.active{animation:pulse 1.5s infinite}
-.nd.done .st{color:#2a9d3e}
-.nd.err .st{color:var(--red)}
+.nd.done .st{color:var(--green)}
+.nd.err .st{color:var(--pink)}
 @keyframes ndIn{to{opacity:1;transform:scale(1)}}
-@keyframes pulse{0%,100%{box-shadow:0 2px 12px rgba(215,38,56,.15)}50%{box-shadow:0 4px 28px rgba(215,38,56,.35)}}
-.panel{position:fixed;right:0;top:0;width:420px;height:100vh;background:rgba(255,255,255,.97);backdrop-filter:blur(16px);border-left:1px solid var(--gray-200);transform:translateX(100%);transition:transform .3s;z-index:150;display:flex;flex-direction:column}
+@keyframes pulse{0%,100%{box-shadow:0 0 15px rgba(0,212,255,.2)}50%{box-shadow:0 0 30px rgba(0,212,255,.45)}}
+.panel{position:fixed;right:0;top:0;width:420px;height:100vh;background:rgba(26,26,31,.96);backdrop-filter:blur(16px);border-left:1px solid rgba(255,255,255,.06);transform:translateX(100%);transition:transform .3s;z-index:150;display:flex;flex-direction:column}
 .panel.open{transform:translateX(0)}
-.panel .ph{padding:14px;border-bottom:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center}
-.panel .ph h3{font-size:13px;font-weight:600;color:var(--black)}
-.panel .pc{background:none;border:none;color:var(--text);cursor:pointer;font-size:16px}
-.panel .pb{flex:1;overflow-y:auto;padding:14px;font-size:12px;line-height:1.7;color:var(--gray-700)}
-.panel .pb pre{white-space:pre-wrap;font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--gray-100);padding:10px;border-radius:8px;margin-top:6px;word-break:break-word;color:var(--black)}
-.panel .pb .json-block{background:rgba(215,38,56,.04);border:1px solid rgba(215,38,56,.15);border-radius:8px;padding:12px;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;white-space:pre-wrap;word-break:break-word;color:var(--black)}
-#sbar{padding:5px 20px;background:var(--black);border-top:1px solid var(--gray-200);font-size:10px;color:rgba(255,255,255,.55);display:flex;gap:16px;font-family:'JetBrains Mono',monospace;z-index:100}
-#sbar span{display:flex;align-items:center;gap:4px;color:rgba(255,255,255,.7)}
+.panel .ph{padding:14px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center}
+.panel .ph h3{font-size:13px;font-weight:600}
+.panel .pc{background:none;border:none;color:var(--chalk);cursor:pointer;font-size:16px}
+.panel .pb{flex:1;overflow-y:auto;padding:14px;font-size:12px;line-height:1.7}
+.panel .pb pre{white-space:pre-wrap;font-family:'JetBrains Mono',monospace;font-size:10px;background:rgba(255,255,255,.03);padding:10px;border-radius:8px;margin-top:6px;word-break:break-word}
+.panel .pb .json-block{background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.15);border-radius:8px;padding:12px;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;white-space:pre-wrap;word-break:break-word}
+#sbar{padding:5px 20px;background:rgba(20,20,25,.9);border-top:1px solid rgba(255,255,255,.06);font-size:10px;color:var(--dim);display:flex;gap:16px;font-family:'JetBrains Mono',monospace;z-index:100}
+#sbar span{display:flex;align-items:center;gap:4px}
 .dot{width:6px;height:6px;border-radius:50%;display:inline-block}
-.dot.g{background:#2a9d3e;box-shadow:0 0 6px #2a9d3e}
-.dot.y{background:var(--red-light);box-shadow:0 0 6px var(--red-light)}
-.dot.r{background:var(--red);box-shadow:0 0 6px var(--red)}
+.dot.g{background:var(--green);box-shadow:0 0 6px var(--green)}
+.dot.y{background:var(--yellow);box-shadow:0 0 6px var(--yellow)}
+.dot.r{background:var(--pink);box-shadow:0 0 6px var(--pink)}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:10px;font-size:12px;z-index:200;animation:fU .4s}
-.toast.ok{background:rgba(42,157,62,.08);border:1px solid #2a9d3e;color:#2a9d3e}
-.toast.er{background:rgba(215,38,56,.08);border:1px solid var(--red);color:var(--red)}
+.toast.ok{background:rgba(57,255,127,.12);border:1px solid var(--green);color:var(--green)}
+.toast.er{background:rgba(255,45,123,.12);border:1px solid var(--pink);color:var(--pink)}
 @keyframes fU{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-#log{position:fixed;bottom:30px;left:10px;width:340px;max-height:180px;overflow-y:auto;background:rgba(17,17,17,.95);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 10px;font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,.5);z-index:200;display:none}
+#log{position:fixed;bottom:30px;left:10px;width:340px;max-height:180px;overflow-y:auto;background:rgba(10,10,14,.94);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:6px 10px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);z-index:200;display:none}
 #log.v{display:block}
-.ll{margin:1px 0;padding:1px 0;border-bottom:1px solid rgba(255,255,255,.06)}
-.ll.e{color:#ff4d5e}.ll.o{color:#2a9d3e}.ll.i{color:rgba(255,255,255,.7)}
+.ll{margin:1px 0;padding:1px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.ll.e{color:var(--pink)}.ll.o{color:var(--green)}.ll.i{color:var(--blue)}
 </style>
 </head>
 <body>
@@ -70,7 +69,8 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
 <header>
  <h1>🧠 AI Content Pipeline</h1>
  <div class="controls">
-  <input type="text" id="topicInput" placeholder="Topic (e.g. Thermocouples for Glass Industry)" style="width:320px">
+  <input type="text" id="topicInput" placeholder="Topic (e.g. Temperature Sensors)" style="width:220px">
+  <input type="text" id="urlInput" placeholder="Website URL" style="width:180px">
   <button class="btn btn-p" id="startBtn" onclick="startPipeline()">▶ Launch</button>
   <button class="btn btn-s" onclick="resetPipeline()">↻</button>
   <button class="btn btn-s" onclick="toggleLog()">📋</button>
@@ -87,23 +87,7 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
 <div id="log"></div>
 <script>
 const API_URL='https://text.pollinations.ai/';
-const BASE_URL='www.tempsens.com';
 let R={},running=false,conns=[];
-const REQUEST_DELAY=300;
-const MAX_RETRIES=3;
-const BASE_BACKOFF=1500;
-const MAX_CONCURRENT=2;
-let activeRequests=0;
-const pendingQueue=[];
-
-function delay(ms){return new Promise(r=>setTimeout(r,ms))}
-
-function enqueueRequest(fn){
- return new Promise((resolve,reject)=>{
-  const run=()=>{activeRequests++;fn().then(r=>{activeRequests--;setTimeout(()=>{if(pendingQueue.length>0){const next=pendingQueue.shift();next()}},REQUEST_DELAY);resolve(r)}).catch(e=>{activeRequests--;if(pendingQueue.length>0){const next=pendingQueue.shift();next()}reject(e)})};
-  if(activeRequests<MAX_CONCURRENT)run();else pendingQueue.push(run);
- });
-}
 const T={
  root:{id:'root',label:'Master AI Agent',icon:'🧠',c:'root',x:.07,y:.5,ch:['gather','keywords','schema']},
  gather:{id:'gather',label:'Content Gathering',icon:'🌐',c:'s1',x:.22,y:.18,ch:['masterPrompt'],d:'Gather content from websites'},
@@ -147,48 +131,33 @@ function drawL(){
   const x1=fR.left+fR.width/2-bR.left,y1=fR.top+fR.height/2-bR.top,x2=tR.left+tR.width/2-bR.left,y2=tR.top+tR.height/2-bR.top;
   const dn=fe.classList.contains('done'),ac=fe.classList.contains('active');
   ctx.beginPath();ctx.moveTo(x1,y1);ctx.bezierCurveTo(x1+(x2-x1)*.5,y1,x1+(x2-x1)*.5,y2,x2,y2);
-  ctx.strokeStyle=dn?'rgba(42,157,62,.4)':ac?'rgba(215,38,56,.35)':'rgba(0,0,0,.1)';ctx.lineWidth=dn?2:1.5;ctx.stroke();
-  if(dn||ac){ctx.setLineDash([4,6]);ctx.strokeStyle=dn?'rgba(42,157,62,.6)':'rgba(215,38,56,.55)';ctx.lineWidth=1;ctx.stroke();ctx.setLineDash([])}
+  ctx.strokeStyle=dn?'rgba(57,255,127,.35)':ac?'rgba(0,212,255,.35)':'rgba(255,255,255,.07)';ctx.lineWidth=dn?2:1.5;ctx.stroke();
+  if(dn||ac){ctx.setLineDash([4,6]);ctx.strokeStyle=dn?'rgba(57,255,127,.55)':'rgba(0,212,255,.55)';ctx.lineWidth=1;ctx.stroke();ctx.setLineDash([])}
  });
 }
 
 function setS(id,s,cls){const e=document.getElementById(`n-${id}`),st=document.getElementById(`s-${id}`);if(!e||!st)return;e.classList.remove('active','done','err');if(cls)e.classList.add(cls);st.textContent=s;drawL()}
 function uS(t,c){document.getElementById('sTxt').textContent=t;document.getElementById('sDot').className=`dot ${c}`}
 
-async function callLLMDirect(prompt){
- document.getElementById('apiS').textContent='AI: Working ⏳';
- for(let attempt=0;attempt<=MAX_RETRIES;attempt++){
-  try{
-   if(attempt>0){const wait=BASE_BACKOFF*Math.pow(2,attempt-1);lg(`⏳ Retry ${attempt}/${MAX_RETRIES} in ${(wait/1000).toFixed(0)}s...`,'i');await delay(wait)}
-   const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({messages:[{role:'user',content:prompt}],seed:Math.floor(Math.random()*100000)})});
-   if(r.status===429){
-    const t=await r.text();lg(`API 429 rate limited${attempt<MAX_RETRIES?' — will retry':' — giving up'}`,'e');
-    if(attempt===MAX_RETRIES)return{err:true,text:`Rate limited after ${MAX_RETRIES} retries: ${t}`};
-    continue;
-   }
-   if(!r.ok){const t=await r.text();lg(`API ${r.status}: ${t}`,'e');return{err:true,text:`Error ${r.status}: ${t}`}}
-   const txt=await r.text();
-   lg(`✓ AI responded (${txt.length} chars)`,'o');
-   document.getElementById('apiS').textContent='AI: Ready ✓';
-   return{err:false,text:txt};
-  }catch(e){
-   if(attempt===MAX_RETRIES){lg(`Network: ${e.message}`,'e');return{err:true,text:e.message}}
-   lg(`Network error, retrying...`,'e');
-  }
- }
-}
-
 async function callLLM(prompt){
- lg('Calling AI (Pollinations) — queued...','i');
- return enqueueRequest(()=>callLLMDirect(prompt));
+ lg('Calling AI (Pollinations)...','i');
+ document.getElementById('apiS').textContent='AI: Working ⏳';
+ try{
+  const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.sblacktringify({messages:[{role:'user',content:prompt}],seed:Math.floor(Math.random()*100000)})});
+  if(!r.ok){const t=await r.text();lg(`API ${r.status}: ${t}`,'e');return{err:true,text:`Error ${r.status}: ${t}`}}
+  const txt=await r.text();
+  lg(`✓ AI responded (${txt.length} chars)`,'o');
+  document.getElementById('apiS').textContent='AI: Ready ✓';
+  return{err:false,text:txt};
+ }catch(e){lg(`Network: ${e.message}`,'e');return{err:true,text:e.message}}
 }
 
 function showOut(id){
  const p=document.getElementById('panel'),ti=document.getElementById('pT'),bo=document.getElementById('pB'),n=T[id],r=R[id];
  ti.textContent=`${n.icon} ${n.label}`;
  if(r){
-  let h=`<p style="color:${r.err?'var(--red)':'#2a9d3e'};margin-bottom:6px">${r.err?'✗ Error':'✓ Completed'}</p>`;
+  let h=`<p style="color:${r.err?'var(--pink)':'var(--green)'};margin-bottom:6px">${r.err?'✗ Error':'✓ Completed'}</p>`;
   if(n.img||n.vid)h+=`<div class="json-block">${r.text}</div>`;
   else h+=`<pre>${r.text}</pre>`;
   bo.innerHTML=h;
@@ -214,48 +183,41 @@ async function startPipeline(){
  if(running)return;
  running=true;
  const topic=document.getElementById('topicInput').value||'Industrial Temperature Sensors';
- const url=BASE_URL;
+ const url=document.getElementById('urlInput').value||'tempsens.com';
  document.getElementById('startBtn').disabled=true;R={};
  document.getElementById('log').innerHTML='';uS('Initializing...','y');lg('Pipeline started: '+topic);toast('🚀 Pipeline launched!');
- const CTX=`Source: ${url} (Tempsens Instruments — manufacturer of temperature sensors, thermocouples, RTDs, and thermal solutions for industrial applications). Use their actual product lines, technical specifications, materials (e.g. R-type, S-type, K-type thermocouples, platinum RTDs), temperature ranges, certifications, and industrial applications as factual references.`;
 
  setS('root','orchestrating...','active');
  const[g,k,s]=await Promise.all([
-  runA('gather',`${CTX}\nResearch "${topic}" from ${url}. Provide comprehensive summary: product catalog, technical specs, temperature ranges, materials, certifications, USPs, target industries (glass, steel, cement, aluminum), competitive advantages. Bullet points.`),
-  runA('keywords',`${CTX}\nSEO keyword research for "${topic}" (${url}): 1) 10 primary keywords 2) 10 long-tail keywords 3) 5 LSI keywords 4) Search intent mapping. Focus on industrial/B2B buyer intent.`)
+  runA('gather',`Research "${topic}" from ${url}. Provide comprehensive summary: products, features, USPs, target market, competitive advantages. Bullet points.`),
+  runA('keywords',`SEO keyword research for "${topic}" (${url}): 1) 10 primary keywords 2) 10 long-tail keywords 3) 5 LSI keywords 4) Search intent mapping.`),
+  runA('schema',`Schema markup for "${topic}" (${url}): Article, Product, FAQ, Organization schemas as JSON-LD.`)
  ]);
- const s2=await runA('schema',`${CTX}\nSchema markup for "${topic}" (${url}): Article, Product, FAQ, Organization schemas as JSON-LD. Include Tempsens brand, product specs, and pricing structure hints.`);
  setS('root','✓ done','done');
- if(g.err&&k.err&&s2.err){toast('Stage 1 failed!',false);running=false;document.getElementById('startBtn').disabled=false;return}
+ if(g.err&&k.err&&s.err){toast('Stage 1 failed!',false);running=false;document.getElementById('startBtn').disabled=false;return}
 
- const gt=g.text||'',kt=k.text||'',st=s2.text||'';
- const mp=await runA('masterPrompt',`${CTX}\nMaster content strategist. Create MASTER BRIEF:\nResearch: ${gt.substring(0,600)}\nKeywords: ${kt.substring(0,600)}\nSchemas: ${st.substring(0,400)}\nCover: Brand voice (technical authority, industrial expertise), audience (plant engineers, procurement managers), key messages, content pillars, CTA strategy for ${url}.`);
+ const gt=g.text||'',kt=k.text||'',st=s.text||'';
+ const mp=await runA('masterPrompt',`Master content strategist. Create MASTER BRIEF:\nResearch: ${gt.substring(0,500)}\nKeywords: ${kt.substring(0,500)}\nSchemas: ${st.substring(0,300)}\nCover: Brand voice, audience, key messages, content pillars, CTA strategy.`);
  const mpt=mp.text||'';
 
  const[cb,ib]=await Promise.all([
-  runA('contentAgent',`${CTX}\nContent Director. Break this brief into assignments for Blog, Social Media, Ad Copy, Email Marketing:\n${mpt.substring(0,700)}\nFor each: tone (authoritative, technical), length, key points referencing Tempsens products, CTA pointing to ${url}, format.`),
-  runA('imageAgent',`${CTX}\nArt Director. Break visual requirements for Blog images, Banners, Product posts, Emailers based on:\n${mpt.substring(0,700)}\nFor each: concept featuring Tempsens products (thermocouples, RTDs, protection tubes), industrial factory settings, style direction, mood board notes, color palette (use Tempsens brand colors).`)
+  runA('contentAgent',`Content Director. Break this brief into assignments for Blog, Social Media, Ad Copy, Email Marketing:\n${mpt.substring(0,600)}\nFor each: tone, length, key points, CTA, format.`),
+  runA('imageAgent',`Art Director. Break visual requirements for Blog images, Banners, Product posts, Emailers based on:\n${mpt.substring(0,600)}\nFor each: concept, style direction, mood board notes, color palette.`)
  ]);
  const cbt=cb.text||'',ibt=ib.text||'';
 
  await Promise.all([
-  runA('blog',`${CTX}\nWrite 500-word blog about "${topic}". Guidelines: ${cbt.substring(0,500)}. Reference specific Tempsens products from ${url}. H2 headings, bullets, strong CTA to ${url}, SEO optimized.`),
-  runA('social',`${CTX}\n5 social posts for "${topic}" on LinkedIn, Instagram, Twitter, Facebook. ${cbt.substring(0,400)}. Reference ${url} products. Hashtags, emojis, engaging.`)
- ]);
- await Promise.all([
-  runA('adCopy',`${CTX}\n4 ad copies for "${topic}": Google Ads (2 RSAs), Facebook Ad, LinkedIn Sponsored. ${cbt.substring(0,400)}. Reference Tempsens products, CTA to ${url}. Headlines, descriptions, CTAs.`),
-  runA('email',`${CTX}\n3-email sequence for "${topic}". ${cbt.substring(0,400)}. Reference Tempsens product lines from ${url}. Subject lines, preview text, body, CTA buttons linking to ${url}.`)
- ]);
- await Promise.all([
-  runA('blogImg',`${IMG_SYS}\n\n${CTX}\nCreate 3 blog header image prompts for "${topic}". Feature Tempsens thermocouple/RTD products in industrial settings (glass furnaces, steel plants). Use product photography style from ${url}. Visual direction: ${ibt.substring(0,400)}. Output as JSON array of 3 objects.`),
-  runA('banners',`${IMG_SYS}\n\n${CTX}\nCreate 4 banner prompts for "${topic}": website hero (1920x600), social cover (1584x396), email header (600x200), ad banner (1200x628). Feature Tempsens products in factory/industrial environments. Direction: ${ibt.substring(0,400)}. JSON array of 4 objects with dimensions field added.`)
- ]);
- await Promise.all([
-  runA('productPosts',`${IMG_SYS}\n\n${CTX}\nCreate 4 product social media image prompts for "${topic}": Instagram square (1080x1080), Story (1080x1920), LinkedIn (1200x627), Pinterest (1000x1500). Showcase Tempsens thermocouples/RTDs with close-up product photography. Direction: ${ibt.substring(0,400)}. JSON array of 4 objects with platform and dimensions.`),
-  runA('emailers',`${IMG_SYS}\n\n${CTX}\nCreate 3 emailer image prompts for "${topic}": header banner, inline product shot, footer CTA banner. Feature Tempsens products from ${url}. Direction: ${ibt.substring(0,400)}. JSON array of 3 objects.`)
+  runA('blog',`Write 500-word blog about "${topic}". Guidelines: ${cbt.substring(0,400)}. H2 headings, bullets, strong CTA, SEO optimized.`),
+  runA('social',`5 social posts for "${topic}" on LinkedIn, Instagram, Twitter, Facebook. ${cbt.substring(0,300)}. Hashtags, emojis, engaging.`),
+  runA('adCopy',`4 ad copies for "${topic}": Google Ads (2 RSAs), Facebook Ad, LinkedIn Sponsored. ${cbt.substring(0,300)}. Headlines, descriptions, CTAs.`),
+  runA('email',`3-email sequence for "${topic}". ${cbt.substring(0,300)}. Subject lines, preview text, body, CTA buttons.`),
+  runA('blogImg',`${IMG_SYS}\n\nCreate 3 blog header image prompts for "${topic}". Visual direction: ${ibt.substring(0,300)}. Output as JSON array of 3 objects.`),
+  runA('banners',`${IMG_SYS}\n\nCreate 4 banner prompts for "${topic}": website hero (1920x600), social cover (1584x396), email header (600x200), ad banner (1200x628). Direction: ${ibt.substring(0,300)}. JSON array of 4 objects with dimensions field added.`),
+  runA('productPosts',`${IMG_SYS}\n\nCreate 4 product social media image prompts for "${topic}": Instagram square (1080x1080), Story (1080x1920), LinkedIn (1200x627), Pinterest (1000x1500). Direction: ${ibt.substring(0,300)}. JSON array of 4 objects with platform and dimensions.`),
+  runA('emailers',`${IMG_SYS}\n\nCreate 3 emailer image prompts for "${topic}": header banner, inline product shot, footer CTA banner. Direction: ${ibt.substring(0,300)}. JSON array of 3 objects.`)
  ]);
 
- await runA('videoAgent',`${VID_SYS}\n\n${CTX}\nCreate 4 cinematic video shots for "${topic}" for social media. Feature Tempsens thermocouples/RTDs being manufactured and installed in industrial settings (glass furnaces, steel mills). Platforms: Instagram Reels, TikTok, LinkedIn Video. Each 15-30 seconds. Dramatic, engaging, professional. JSON array of 4 shot objects.`);
+ await runA('videoAgent',`${VID_SYS}\n\nCreate 4 cinematic video shots for "${topic}" for social media. Platforms: Instagram Reels, TikTok, LinkedIn Video. Each 15-30 seconds. Make them dramatic, engaging, professional. JSON array of 4 shot objects.`);
 
  uS('Pipeline complete!','g');toast('🎉 All 15 agents finished! Click nodes to view.');
  running=false;document.getElementById('startBtn').disabled=false;
