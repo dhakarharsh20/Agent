@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Content Pipeline</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#ffffff;--board:#f7f7f8;--red:#d72638;--red-dark:#a91e2e;--red-light:#ff4d5e;--black:#111111;--gray-900:#1a1a1a;--gray-700:#444444;--gray-500:#777777;--gray-300:#c4c4c4;--gray-200:#e0e0e0;--gray-100:#f0f0f0;--text:#111111;--dim:rgba(17,17,17,.4)}
+html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text);-webkit-text-size-adjust:100%}
+#app{height:100vh;height:100dvh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--gray-200);z-index:100;flex-wrap:wrap;gap:8px}
+header h1{font-size:17px;font-weight:700;background:linear-gradient(135deg,var(--red),var(--black));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex:1;min-width:0}
+input[type=text],input[type=password]{background:var(--gray-100);border:1px solid var(--gray-200);border-radius:8px;padding:7px 12px;color:var(--text);font-size:14px;outline:none;font-family:'Inter',sans-serif;min-width:0;-webkit-appearance:none}
+input:focus{border-color:var(--red)}
+input::placeholder{color:var(--dim)}
+#topicInput{flex:1;min-width:140px;max-width:400px}
+.btn{padding:7px 16px;border-radius:8px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.btn-p{background:linear-gradient(135deg,var(--red),var(--red-dark));color:#fff}
+.btn-p:hover{box-shadow:0 0 20px rgba(215,38,56,.35)}
+.btn-p:disabled{opacity:.4;cursor:not-allowed}
+.btn-s{background:var(--gray-100);color:var(--text);border:1px solid var(--gray-200)}
+.btn-s:hover{background:var(--gray-200)}
+#board{flex:1;position:relative;overflow:hidden;background:var(--board);background-image:radial-gradient(circle at 20% 50%,rgba(215,38,56,.03) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(17,17,17,.02) 0%,transparent 50%);touch-action:none}
+#boardInner{position:absolute;top:0;left:0;width:100%;height:100%;transform-origin:0 0}
+canvas{position:absolute;top:0;left:0;width:100%;height:100%}
+.dots{position:absolute;top:0;left:0;width:100%;height:100%;background-image:radial-gradient(circle,rgba(0,0,0,.04) 1px,transparent 1px);background-size:30px 30px;pointer-events:none}
+.nd{position:absolute;padding:9px 14px;border-radius:10px;font-size:11px;cursor:pointer;transition:transform .2s,box-shadow .2s;z-index:10;min-width:90px;text-align:center;opacity:0;transform:scale(.3);animation:ndIn .5s forwards;background:#fff;-webkit-tap-highlight-color:transparent}
+.nd:hover{transform:scale(1.08)!important;z-index:20}
+.nd .ic{font-size:16px;margin-bottom:3px}
+.nd .lb{font-weight:600;font-size:11px;white-space:nowrap;color:var(--black)}
+.nd .st{font-size:9px;margin-top:2px;opacity:.7;font-family:'JetBrains Mono',monospace;color:var(--gray-500)}
+.nd.root{background:#fff;border:2px solid var(--red);box-shadow:0 2px 16px rgba(215,38,56,.15)}
+.nd.s1{background:#fff;border:1.5px solid var(--black);box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.nd.s2{background:#fff;border:1.5px solid var(--red);box-shadow:0 2px 12px rgba(215,38,56,.1)}
+.nd.ct{background:#fff;border:1.5px solid var(--gray-700);box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.nd.im{background:#fff;border:1.5px solid var(--red-dark);box-shadow:0 2px 12px rgba(169,30,46,.08)}
+.nd.out{background:#fff;border:1.5px solid var(--gray-300);box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.nd.active{animation:pulse 1.5s infinite}
+.nd.done .st{color:#2a9d3e}
+.nd.err .st{color:var(--red)}
+@keyframes ndIn{to{opacity:1;transform:scale(1)}}
+@keyframes pulse{0%,100%{box-shadow:0 2px 12px rgba(215,38,56,.15)}50%{box-shadow:0 4px 28px rgba(215,38,56,.35)}}
+.panel{position:fixed;right:0;top:0;width:420px;max-width:100vw;height:100vh;height:100dvh;background:rgba(255,255,255,.97);backdrop-filter:blur(16px);border-left:1px solid var(--gray-200);transform:translateX(100%);transition:transform .3s;z-index:150;display:flex;flex-direction:column}
+.panel.open{transform:translateX(0)}
+.panel .ph{padding:14px;border-bottom:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center}
+.panel .ph h3{font-size:13px;font-weight:600;color:var(--black)}
+.panel .pc{background:none;border:none;color:var(--text);cursor:pointer;font-size:20px;padding:4px 8px;-webkit-tap-highlight-color:transparent}
+.panel .pb{flex:1;overflow-y:auto;padding:14px;font-size:12px;line-height:1.7;color:var(--gray-700);-webkit-overflow-scrolling:touch}
+.panel .pb pre{white-space:pre-wrap;font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--gray-100);padding:10px;border-radius:8px;margin-top:6px;word-break:break-word;color:var(--black);overflow-x:auto}
+.panel .pb .json-block{background:rgba(215,38,56,.04);border:1px solid rgba(215,38,56,.15);border-radius:8px;padding:12px;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;white-space:pre-wrap;word-break:break-word;color:var(--black);overflow-x:auto}
+#sbar{padding:5px 12px;background:var(--black);border-top:1px solid var(--gray-200);font-size:10px;color:rgba(255,255,255,.55);display:flex;gap:10px;font-family:'JetBrains Mono',monospace;z-index:100;flex-wrap:wrap}
+#sbar span{display:flex;align-items:center;gap:4px;color:rgba(255,255,255,.7)}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.dot.g{background:#2a9d3e;box-shadow:0 0 6px #2a9d3e}
+.dot.y{background:var(--red-light);box-shadow:0 0 6px var(--red-light)}
+.dot.r{background:var(--red);box-shadow:0 0 6px var(--red)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:10px;font-size:12px;z-index:200;animation:fU .4s;max-width:90vw;text-align:center}
+.toast.ok{background:rgba(42,157,62,.08);border:1px solid #2a9d3e;color:#2a9d3e}
+.toast.er{background:rgba(215,38,56,.08);border:1px solid var(--red);color:var(--red)}
+@keyframes fU{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+#log{position:fixed;bottom:30px;left:10px;width:340px;max-width:calc(100vw - 20px);max-height:180px;overflow-y:auto;background:rgba(17,17,17,.95);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 10px;font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,.5);z-index:200;display:none;-webkit-overflow-scrolling:touch}
+#log.v{display:block}
+.ll{margin:1px 0;padding:1px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.ll.e{color:#ff4d5e}.ll.o{color:#2a9d3e}.ll.i{color:rgba(255,255,255,.7)}
+
+/* === TABLET (<= 900px) === */
+@media(max-width:900px){
+ header{padding:8px 12px;gap:6px}
+ header h1{font-size:15px}
+ .controls{gap:6px}
+ .btn{padding:8px 14px;min-height:36px}
+ .nd{padding:7px 10px;min-width:80px}
+ .nd .ic{font-size:14px}
+ .nd .lb{font-size:10px}
+ .nd .st{font-size:8px}
+ .panel{width:340px}
+ #sbar{padding:5px 10px;gap:8px;font-size:9px}
+}
+
+/* === MOBILE (<= 600px) === */
+@media(max-width:600px){
+ header{padding:8px 10px;gap:6px;justify-content:center}
+ header h1{font-size:14px;width:100%;text-align:center}
+ .controls{width:100%;justify-content:center;gap:6px}
+ #topicInput{width:100%!important;max-width:100%;flex:1 1 100%;font-size:14px;padding:10px 12px}
+ .btn{padding:10px 14px;font-size:12px;min-height:40px}
+ #board{overflow-y:auto;overflow-x:hidden;touch-action:pan-y}
+ #boardInner{position:relative;width:100%;min-height:100%}
+ .nd{padding:8px 10px;min-width:70px;border-radius:8px}
+ .nd .ic{font-size:15px;margin-bottom:2px}
+ .nd .lb{font-size:10px}
+ .nd .st{font-size:8px}
+ .panel{width:100vw;border-left:none;border-top:1px solid var(--gray-200)}
+ .panel .ph{padding:12px 16px}
+ .panel .pb{padding:12px 16px;font-size:13px}
+ .panel .pb pre{font-size:10px;padding:8px}
+ .panel .pb .json-block{font-size:10px;padding:8px}
+ #sbar{padding:4px 8px;gap:6px;font-size:8px;justify-content:center}
+ #log{left:5px;bottom:28px;width:calc(100vw - 10px);max-width:100%;font-size:8px}
+ .toast{bottom:28px;font-size:11px;padding:8px 16px}
+}
+
+/* === SMALL MOBILE (<= 380px) === */
+@media(max-width:380px){
+ header h1{font-size:13px}
+ .nd{padding:5px 6px;min-width:58px}
+ .nd .ic{font-size:11px}
+ .nd .lb{font-size:8px}
+ .nd .st{font-size:7px}
+ .btn{padding:8px 10px;font-size:11px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+ <h1>🧠 AI Content Pipeline</h1>
+ <div class="controls">
+   <input type="text" id="topicInput" placeholder="Topic (e.g. Thermocouples for Glass Industry)">
+  <button class="btn btn-p" id="startBtn" onclick="startPipeline()">▶ Launch</button>
+  <button class="btn btn-s" onclick="resetPipeline()">↻</button>
+  <button class="btn btn-s" onclick="toggleLog()">📋</button>
+ </div>
+</header>
+<div id="board"><div id="boardInner"><div class="dots"></div><canvas id="cv"></canvas><div id="nodes"></div></div></div>
+<div id="sbar">
+ <span><span class="dot g" id="sDot"></span><span id="sTxt">Ready</span></span>
+ <span>Agents: <span id="aC">0</span>/15</span>
+ <span id="apiS">AI: Idle</span>
+</div>
+</div>
+<div class="panel" id="panel"><div class="ph"><h3 id="pT">Output</h3><div><button id="pCopy" class="btn btn-s" style="padding:4px 8px;font-size:10px;margin-right:8px;display:none" onclick="copyP()">Copy</button><button class="pc" onclick="closeP()">✕</button></div></div><div class="pb" id="pB"></div></div>
+<div id="log"></div>
+<script>
+const API_URL='https://text.pollinations.ai/';
+const BASE_URL='www.tempsens.com';
+let R={},running=false,conns=[];
+const REQUEST_DELAY=1000;
+const MAX_RETRIES=3;
+const BASE_BACKOFF=2000;
+let requestQueue=Promise.resolve();
+let VIRT_W=1200,VIRT_H=700;
+let panX=0,panY=0,zoom=1;
+
+function delay(ms){return new Promise(r=>setTimeout(r,ms))}
+
+function enqueueRequest(fn){
+ requestQueue=requestQueue.then(()=>fn()).then(r=>delay(REQUEST_DELAY).then(()=>r));
+ return requestQueue;
+}
+const T={
+ root:{id:'root',label:'Master AI Agent',icon:'🧠',c:'root',x:.07,y:.5,ch:['gather','keywords','schema']},
+ gather:{id:'gather',label:'Content Gathering',icon:'🌐',c:'s1',x:.22,y:.18,ch:['masterPrompt'],d:'Gather content from websites'},
+ keywords:{id:'keywords',label:'Keyword Research',icon:'🔍',c:'s1',x:.22,y:.5,ch:['masterPrompt'],d:'Search & analyze keywords'},
+ schema:{id:'schema',label:'Schema Creator',icon:'📐',c:'s1',x:.22,y:.82,ch:['masterPrompt'],d:'Create structured schemas'},
+ masterPrompt:{id:'masterPrompt',label:'Master Prompt',icon:'⚡',c:'s2',x:.40,y:.5,ch:['contentAgent','imageAgent'],d:'Generate master content brief'},
+ contentAgent:{id:'contentAgent',label:'Content Agent',icon:'✍️',c:'ct',x:.56,y:.25,ch:['blog','social','adCopy','email'],d:'Content generation coordinator'},
+ imageAgent:{id:'imageAgent',label:'Image Agent',icon:'🎨',c:'im',x:.56,y:.75,ch:['blogImg','banners','productPosts','emailers'],d:'Image prompt coordinator'},
+ blog:{id:'blog',label:'Blog Articles',icon:'📝',c:'out',x:.74,y:.07,ch:[]},
+ social:{id:'social',label:'Social Posts',icon:'📱',c:'out',x:.74,y:.19,ch:[]},
+ adCopy:{id:'adCopy',label:'Ad Copies',icon:'📢',c:'out',x:.74,y:.31,ch:[]},
+ email:{id:'email',label:'Email Marketing',icon:'📧',c:'out',x:.74,y:.43,ch:[]},
+ blogImg:{id:'blogImg',label:'Blog Images',icon:'🖼️',c:'out',x:.74,y:.57,ch:['videoAgent'],img:true},
+ banners:{id:'banners',label:'Banners',icon:'🏷️',c:'out',x:.74,y:.69,ch:['videoAgent'],img:true},
+ productPosts:{id:'productPosts',label:'Product Posts',icon:'📸',c:'out',x:.74,y:.81,ch:['videoAgent'],img:true},
+ emailers:{id:'emailers',label:'Emailer Images',icon:'✉️',c:'out',x:.74,y:.93,ch:['videoAgent'],img:true},
+ videoAgent:{id:'videoAgent',label:'Google Flow AI Video',icon:'🎬',c:'s2',x:.90,y:.75,ch:[],vid:true}
+};
+
+// Mobile vertical layout: 3 columns, flows top-to-bottom
+const MOB_POS={
+ root:{x:.50,y:.04},
+ gather:{x:.18,y:.13},keywords:{x:.50,y:.13},schema:{x:.82,y:.13},
+ masterPrompt:{x:.50,y:.22},
+ contentAgent:{x:.27,y:.31},imageAgent:{x:.73,y:.31},
+ blog:{x:.13,y:.42},social:{x:.40,y:.42},adCopy:{x:.13,y:.53},email:{x:.40,y:.53},
+ blogImg:{x:.60,y:.42},banners:{x:.87,y:.42},productPosts:{x:.60,y:.53},emailers:{x:.87,y:.53},
+ videoAgent:{x:.50,y:.64}
+};
+
+function isMobile(){return window.innerWidth<=600}
+
+function lg(m,t='i'){const l=document.getElementById('log');l.classList.add('v');const d=document.createElement('div');d.className=`ll ${t}`;d.textContent=`[${new Date().toLocaleTimeString()}] ${m}`;l.appendChild(d);l.scrollTop=l.scrollHeight}
+function toggleLog(){document.getElementById('log').classList.toggle('v')}
+function buildC(){conns=[];Object.values(T).forEach(n=>n.ch.forEach(c=>conns.push([n.id,c])))}
+
+function getBoardSize(){
+ const b=document.getElementById('board');
+ const bw=b.clientWidth,bh=b.clientHeight;
+ if(isMobile()){VIRT_W=400;VIRT_H=Math.max(600,bh)}
+ else{VIRT_W=1200;VIRT_H=700}
+ return{W:Math.max(VIRT_W,bw),H:Math.max(VIRT_H,bh),bw,bh};
+}
+
+function autoFit(){
+ const b=document.getElementById('board');
+ const bw=b.clientWidth,bh=b.clientHeight;
+ if(isMobile()){zoom=1;panX=0;panY=0}
+ else{zoom=Math.min(bw/VIRT_W,bh/VIRT_H,1);panX=(bw-VIRT_W*zoom)/2;panY=(bh-VIRT_H*zoom)/2}
+ applyTransform();
+}
+
+function applyTransform(){
+ const inner=document.getElementById('boardInner');
+ if(inner) inner.style.transform=`translate(${panX}px,${panY}px) scale(${zoom})`;
+}
+
+function renderN(){
+ const box=document.getElementById('nodes');
+ const {W,H}=getBoardSize();
+ const mob=isMobile();
+ box.innerHTML='';let dl=0;
+ Object.values(T).forEach(n=>{
+  const pos=mob&&MOB_POS[n.id]?MOB_POS[n.id]:n;
+  const e=document.createElement('div');e.className=`nd ${n.c}`;e.id=`n-${n.id}`;
+  const nw=mob?34:55;const nh=mob?20:26;
+  e.style.left=`${pos.x*W-nw}px`;e.style.top=`${pos.y*H-nh}px`;e.style.animationDelay=`${dl}ms`;
+  e.innerHTML=`<div class="ic">${n.icon}</div><div class="lb">${n.label}</div><div class="st" id="s-${n.id}">idle</div>`;
+  e.onclick=()=>showOut(n.id);box.appendChild(e);dl+=50;
+ });
+ autoFit();
+}
+
+function drawL(){
+ const cv=document.getElementById('cv');
+ const {W,H}=getBoardSize();
+ cv.width=W;cv.height=H;const ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);
+ conns.forEach(([f,t])=>{
+  const fe=document.getElementById(`n-${f}`),te=document.getElementById(`n-${t}`);if(!fe||!te)return;
+  const x1=fe.offsetLeft+fe.offsetWidth/2,y1=fe.offsetTop+fe.offsetHeight/2;
+  const x2=te.offsetLeft+te.offsetWidth/2,y2=te.offsetTop+te.offsetHeight/2;
+  const dn=fe.classList.contains('done'),ac=fe.classList.contains('active');
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.bezierCurveTo(x1+(x2-x1)*.5,y1,x1+(x2-x1)*.5,y2,x2,y2);
+  ctx.strokeStyle=dn?'rgba(42,157,62,.4)':ac?'rgba(215,38,56,.35)':'rgba(0,0,0,.1)';ctx.lineWidth=dn?2:1.5;ctx.stroke();
+  if(dn||ac){ctx.setLineDash([4,6]);ctx.strokeStyle=dn?'rgba(42,157,62,.6)':'rgba(215,38,56,.55)';ctx.lineWidth=1;ctx.stroke();ctx.setLineDash([])}
+ });
+}
+
+function setS(id,s,cls){const e=document.getElementById(`n-${id}`),st=document.getElementById(`s-${id}`);if(!e||!st)return;e.classList.remove('active','done','err');if(cls)e.classList.add(cls);st.textContent=s;drawL()}
+function uS(t,c){document.getElementById('sTxt').textContent=t;document.getElementById('sDot').className=`dot ${c}`}
+
+async function callLLMDirect(prompt){
+ document.getElementById('apiS').textContent='AI: Working ⏳';
+ for(let attempt=0;attempt<=MAX_RETRIES;attempt++){
+  try{
+   if(attempt>0){const wait=BASE_BACKOFF*Math.pow(2,attempt-1);lg(`⏳ Retry ${attempt}/${MAX_RETRIES} in ${(wait/1000).toFixed(0)}s...`,'i');await delay(wait)}
+   const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({messages:[{role:'user',content:prompt}],seed:Math.floor(Math.random()*100000)})});
+   if(r.status===429){
+    const t=await r.text();lg(`API 429 rate limited${attempt<MAX_RETRIES?' — will retry':' — giving up'}`,'e');
+    if(attempt===MAX_RETRIES)return{err:true,text:`Rate limited after ${MAX_RETRIES} retries: ${t}`};
+    continue;
+   }
+   if(!r.ok){const t=await r.text();lg(`API ${r.status}: ${t}`,'e');return{err:true,text:`Error ${r.status}: ${t}`}}
+   let txt=await r.text();
+   if (txt.includes('","tool_calls":[]}')) {
+    txt = txt.replace(/","tool_calls":\[\]\}/g, '');
+    if (txt.startsWith('"')) txt = txt.substring(1);
+    try { txt = JSON.parse('"' + txt + '"'); } catch(e) { txt = txt.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\'); }
+   } else if (txt.startsWith('"') && txt.endsWith('"')) {
+    try { txt = JSON.parse(txt); } catch(e) {}
+   } else if (!txt.trim().startsWith('{') && !txt.trim().startsWith('[')) {
+    txt = txt.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+   }
+   lg(`✓ AI responded (${txt.length} chars)`,'o');
+   document.getElementById('apiS').textContent='AI: Ready ✓';
+   return{err:false,text:txt};
+  }catch(e){
+   if(attempt===MAX_RETRIES){lg(`Network: ${e.message}`,'e');return{err:true,text:e.message}}
+   lg(`Network error, retrying...`,'e');
+  }
+ }
+}
+
+async function callLLM(prompt){
+ lg('Calling AI (Pollinations) — queued...','i');
+ return enqueueRequest(()=>callLLMDirect(prompt));
+}
+
+let currentOutput='';
+function esc(s){return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function showOut(id){
+ const p=document.getElementById('panel'),ti=document.getElementById('pT'),bo=document.getElementById('pB'),cp=document.getElementById('pCopy'),n=T[id],r=R[id];
+ ti.textContent=`${n.icon} ${n.label}`;
+ if(r){
+  currentOutput=r.text||'';
+  if(cp) cp.style.display='inline-block';
+  let h=`<p style="color:${r.err?'var(--red)':'#2a9d3e'};margin-bottom:6px">${r.err?'✗ Error':'✓ Completed'}</p>`;
+   if(n.img||n.vid){
+    let f=r.text; try{f=JSON.stringify(JSON.parse(f),null,2)}catch(e){}
+    h+=`<div class="json-block">${esc(f)}</div>`;
+   }else{
+    let md=esc(r.text).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/^### (.*$)/gim,'<strong>$1</strong>').replace(/^## (.*$)/gim,'<strong style="font-size:1.1em">$1</strong>').replace(/^# (.*$)/gim,'<strong style="font-size:1.2em">$1</strong>');
+    h+=`<div class="text-block" style="white-space: pre-wrap; font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.6; padding: 14px; margin-top: 6px; color: var(--text); border: 1px solid var(--gray-200); border-radius: 8px; background: #fff;">${md}</div>`;
+   }
+  bo.innerHTML=h;
+ }else{
+  if(cp) cp.style.display='none';
+  bo.innerHTML=`<p style="color:var(--dim)">${n.d||'Waiting...'}</p>`;
+ }
+ p.classList.add('open');
+}
+function copyP(){
+ navigator.clipboard.writeText(currentOutput).then(()=>toast('Copied to clipboard!'));
+}
+function closeP(){document.getElementById('panel').classList.remove('open')}
+function toast(m,ok=true){const t=document.createElement('div');t.className=`toast ${ok?'ok':'er'}`;t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),4000)}
+
+async function runA(id,prompt){
+ setS(id,'running...','active');uS(`Running: ${T[id].label}`,'y');lg(`[${id}] started`);
+ const r=await callLLM(prompt);R[id]=r;
+ r.err?setS(id,'✗ error','err'):setS(id,'✓ done','done');
+ document.getElementById('aC').textContent=Object.keys(R).length;
+ lg(`[${id}] ${r.err?'FAILED':'done'}`,r.err?'e':'o');return r;
+}
+
+const IMG_SYS=`You are a professional photography director. Output ONLY valid JSON (no markdown fences). Each prompt must include: scene_description, lighting (type, direction, color_temperature, modifiers), camera (body, lens, focal_length, aperture, shutter_speed, iso), composition (rule, framing, depth_of_field), color_palette (array), mood, resolution, post_processing (array of techniques). Make it sharp, professional, production-ready.`;
+
+const VID_SYS=`You are a cinematic video director for Google Flow AI. Output ONLY valid JSON (no markdown fences). Each shot must include: scene_description, duration_seconds, camera_movement (type, speed, direction), lens (type, focal_length), lighting (key_light, fill_light, color_temperature), transition (type, duration), audio (background_music_mood, sfx), text_overlay (content, position, animation), color_grading, export_specs (platforms array with dimensions and fps). Professional cinematic quality.`;
+
+async function startPipeline(){
+ if(running)return;
+ running=true;
+ const topic=document.getElementById('topicInput').value||'Industrial Temperature Sensors';
+ const url=BASE_URL;
+ document.getElementById('startBtn').disabled=true;R={};
+ document.getElementById('log').innerHTML='';uS('Initializing...','y');lg('Pipeline started: '+topic);toast('🚀 Pipeline launched!');
+ const CTX=`Source: ${url} (Tempsens Instruments — manufacturer of temperature sensors, thermocouples, RTDs, and thermal solutions for industrial applications). Use their actual product lines, technical specifications, materials (e.g. R-type, S-type, K-type thermocouples, platinum RTDs), temperature ranges, certifications, and industrial applications as factual references.`;
+
+ setS('root','orchestrating...','active');
+ const g=await runA('gather',`${CTX}\nResearch "${topic}" from ${url}. Provide comprehensive summary: product catalog, technical specs, temperature ranges, materials, certifications, USPs, target industries (glass, steel, cement, aluminum), competitive advantages. Bullet points.`);
+ const k=await runA('keywords',`${CTX}\nSEO keyword research for "${topic}" (${url}): 1) 10 primary keywords 2) 10 long-tail keywords 3) 5 LSI keywords 4) Search intent mapping. Focus on industrial/B2B buyer intent.`);
+ const s2=await runA('schema',`${CTX}\nSchema markup for "${topic}" (${url}): Article, Product, FAQ, Organization schemas as JSON-LD. Include Tempsens brand, product specs, and pricing structure hints.`);
+ setS('root','\u2713 done','done');
+ if(g.err&&k.err&&s2.err){toast('Stage 1 failed!',false);running=false;document.getElementById('startBtn').disabled=false;return}
+
+ const gt=g.text||'',kt=k.text||'',st=s2.text||'';
+ const mp=await runA('masterPrompt',`${CTX}\nMaster content strategist. Create MASTER BRIEF:\nResearch: ${gt.substring(0,600)}\nKeywords: ${kt.substring(0,600)}\nSchemas: ${st.substring(0,400)}\nCover: Brand voice (technical authority, industrial expertise), audience (plant engineers, procurement managers), key messages, content pillars, CTA strategy for ${url}.`);
+ const mpt=mp.text||'';
+
+ const cb=await runA('contentAgent',`${CTX}\nContent Director. Break this brief into assignments for Blog, Social Media, Ad Copy, Email Marketing:\n${mpt.substring(0,700)}\nFor each: tone (authoritative, technical), length, key points referencing Tempsens products, CTA pointing to ${url}, format.`);
+ const ib=await runA('imageAgent',`${CTX}\nArt Director. Break visual requirements for Blog images, Banners, Product posts, Emailers based on:\n${mpt.substring(0,700)}\nFor each: concept featuring Tempsens products (thermocouples, RTDs, protection tubes), industrial factory settings, style direction, mood board notes, color palette (use Tempsens brand colors).`);
+ const cbt=cb.text||'',ibt=ib.text||'';
+
+ await runA('blog',`${CTX}\nWrite an 800-1000 word blog about "${topic}" in a humanized, conversational tone like talking directly to a person. Gather content from top-ranking Google pages (simulate this) and use ":blog" citations. Add 3-4 FAQs based on "People Also Ask" questions. Incorporate keywords naturally. Create a list of content used and keywords added at the end. Guidelines: ${cbt.substring(0,500)}. Reference specific Tempsens products from ${url}. H2 headings, bullets, strong CTA to ${url}, SEO optimized.`);
+ await runA('social',`${CTX}\nWrite 5 direct, ready-to-copy social media posts for "${topic}" on LinkedIn, Instagram, Twitter, and Facebook. DO NOT write script text or meta-descriptions—just the direct copy. Use scroll-stopping, curiosity-sparking, or contradictory hooks. Include headings (if any), persuasive CTAs to ${url}. Guidelines: ${cbt.substring(0,400)}.`);
+ await runA('adCopy',`${CTX}\nWrite 4 direct, ready-to-copy ad copies for "${topic}": Google Ads (2 RSAs), Facebook Ad, LinkedIn Sponsored. DO NOT write script text. Use scroll-stopping, curiosity-sparking hooks. Include compelling headings, persuasive CTAs to ${url}. Guidelines: ${cbt.substring(0,400)}.`);
+ await runA('email',`${CTX}\nCode a complete, fully responsive HTML email marketing template for "${topic}" that is flexible for every kind of device and screen. This must be the whole emailer ready to be sent for marketing. DO NOT output script text; output raw HTML code with inline CSS. Use scroll-stopping, curiosity-sparking hooks, direct engaging copy, proper headings, and a persuasive CTA button linking to ${url}. Reference Tempsens product lines. Guidelines: ${cbt.substring(0,400)}.`);
+ await runA('blogImg',`${IMG_SYS}\n\n${CTX}\nCreate 3 blog header image prompts for "${topic}". Feature Tempsens thermocouple/RTD products in industrial settings (glass furnaces, steel plants). Use product photography style from ${url}. Visual direction: ${ibt.substring(0,400)}. Output as JSON array of 3 objects.`);
+ await runA('banners',`${IMG_SYS}\n\n${CTX}\nCreate 4 banner prompts for "${topic}": website hero (1920x600), social cover (1584x396), email header (600x200), ad banner (1200x628). Feature Tempsens products in factory/industrial environments. Direction: ${ibt.substring(0,400)}. JSON array of 4 objects with dimensions field added.`);
+ await runA('productPosts',`${IMG_SYS}\n\n${CTX}\nCreate 4 product social media image prompts for "${topic}": Instagram square (1080x1080), Story (1080x1920), LinkedIn (1200x627), Pinterest (1000x1500). Showcase Tempsens thermocouples/RTDs with close-up product photography. Direction: ${ibt.substring(0,400)}. JSON array of 4 objects with platform and dimensions.`);
+ await runA('emailers',`${IMG_SYS}\n\n${CTX}\nCreate 3 emailer image prompts for "${topic}": header banner, inline product shot, footer CTA banner. Feature Tempsens products from ${url}. Direction: ${ibt.substring(0,400)}. JSON array of 3 objects.`);
+
+ await runA('videoAgent',`${VID_SYS}\n\n${CTX}\nCreate 4 cinematic video shots for "${topic}" for social media. Feature Tempsens thermocouples/RTDs being manufactured and installed in industrial settings (glass furnaces, steel mills). Platforms: Instagram Reels, TikTok, LinkedIn Video. Each 15-30 seconds. Dramatic, engaging, professional. JSON array of 4 shot objects.`);
+
+ uS('Pipeline complete!','g');toast('🎉 All 15 agents finished! Click nodes to view.');
+ running=false;document.getElementById('startBtn').disabled=false;
+}
+
+function resetPipeline(){
+ running=false;R={};document.getElementById('startBtn').disabled=false;
+ Object.keys(T).forEach(id=>setS(id,'idle',null));
+ uS('Ready','g');document.getElementById('aC').textContent='0';
+ document.getElementById('apiS').textContent='AI: Idle';
+ closeP();drawL();document.getElementById('log').innerHTML='';lg('Reset','i');
+}
+
+// --- Touch pan/zoom ---
+(function(){
+ const board=document.getElementById('board');
+ let startX,startY,pinchDist0,pinchZoom0,dragging=false;
+ function dist(t){return Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY)}
+ board.addEventListener('touchstart',function(e){
+  if(e.touches.length===2){pinchDist0=dist(e.touches);pinchZoom0=zoom;dragging=false}
+  else if(e.touches.length===1&&!isMobile()){dragging=true;startX=e.touches[0].clientX-panX;startY=e.touches[0].clientY-panY}
+ },{passive:true});
+ board.addEventListener('touchmove',function(e){
+  if(e.touches.length===2){e.preventDefault();const d=dist(e.touches);zoom=Math.max(.3,Math.min(2,pinchZoom0*(d/pinchDist0)));applyTransform()}
+  else if(e.touches.length===1&&dragging&&!isMobile()){panX=e.touches[0].clientX-startX;panY=e.touches[0].clientY-startY;applyTransform()}
+ },{passive:false});
+ board.addEventListener('touchend',function(){dragging=false},{passive:true});
+ // Mouse wheel zoom for desktop
+ board.addEventListener('wheel',function(e){
+  e.preventDefault();const d=e.deltaY>0?-0.05:0.05;zoom=Math.max(.3,Math.min(2,zoom+d));applyTransform();
+ },{passive:false});
+})();
+
+let resizeTimer;
+function onResize(){clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{renderN();setTimeout(drawL,100)},150)}
+window.addEventListener('load',()=>{buildC();renderN();setTimeout(drawL,800);lg('Ready. Enter topic & launch — no API key needed!','o')});
+window.addEventListener('resize',onResize);
+window.addEventListener('orientationchange',()=>setTimeout(onResize,300));
+</script>
+</body>
+</html>
